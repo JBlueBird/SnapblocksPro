@@ -1,3 +1,5 @@
+Thank you to ego-lay_atman-bay for the snapblocks-test repo. That was AWESOME. Ty so much
+
 # 🧠 SnapBlocks Editor Pro
 
 hiya!! welcome to **SnapBlocks Editor Pro** — it’s like Scratch, but you TYPE the code instead of dragging it around. and then it magically turns into blocks 😎💥
