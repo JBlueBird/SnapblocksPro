@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SnapBlocks Live Editor Pro</title>
+  <script src="snapblocks.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/material-darker.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: system-ui, sans-serif;
+      background: #1e1e1e;
+      color: white;
+      overflow: hidden;
+    }
+    #container {
+      display: flex;
+      height: 100%;
+      width: 100%;
+    }
+    #blockPalette {
+      width: 200px;
+      background-color: #2c2c2c;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    .block-category {
+      margin-bottom: 20px;
+    }
+    .block-category h3 {
+      color: #fff;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .block {
+      background-color: #444;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      cursor: grab;
+      user-select: none;
+    }
+    .block:active {
+      cursor: grabbing;
+    }
+    #editor {
+      width: 50%;
+      height: 100%;
+      background: #282c34;
+      display: flex;
+      flex-direction: column;
+    }
+    #codeArea { flex: 1; }
+    #preview {
+      flex: 1;
+      padding: 16px;
+      overflow: auto;
+      background: #121212;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .toolbar {
+      position: fixed;
+      top: 10px;
+      left: 220px;
+      z-index: 1000;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: rgba(30, 30, 30, 0.95);
+      padding: 8px 12px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+    button, input[type="file"] {
+      background: #2e2e2e;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #444; }
+    textarea#editorArea { display: none; }
+    .CodeMirror { height: 100%; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button onclick="resetCode()">Reset</button>
+    <!--<button onclick="exportSVG()">Export SVG</button>
+    <button onclick="exportPNG()">Export PNG</button>
+	BUTTONS REMOVED BECAUSE OF ERRORS IN EXPORTING AND IMPORTING
+-->
+    <button onclick="saveCode()">Save</button>
+    <input type="file" id="loadFile" accept=".txt" onchange="loadCode(event)">
+  </div>
+
+
+  <!--Add more blocks as needed.-->
+  <div id="container">
+    <div id="blockPalette">
+      <div class="block-category">
+        <h3>Motion</h3>
+        <div class="block" draggable="true" ondragstart="drag(event)">move (10) steps</div>
+        <div class="block" draggable="true" ondragstart="drag(event)">turn cw (15) degrees</div>
+        <div class="block" draggable="true" ondragstart="drag(event)">turn ccw (15) degrees</div>
+        <div class="block" draggable="true" ondragstart="drag(event)">go to [mouse-pointer v]</div>
+      </div>
+      <div class="block-category">
+        <h3>Looks</h3>
+        <div class="block" draggable="true" ondragstart="drag(event)">say [Hello!] for (2) seconds</div>
+        <div class="block" draggable="true" ondragstart="drag(event)">think [Hmm...] for (2) seconds</div>
+        <div class="block" draggable="true" ondragstart="drag(event)">change [color v] effect by (25)</div>
+      </div>
+    </div>
+
+    <div id="editor">
+      <div id="codeArea">
+        <textarea id="editorArea">when green flag clicked
+say [hello]
+</textarea>
+      </div>
+    </div>
+
+    <div id="preview" ondrop="drop(event)" ondragover="event.preventDefault()"></div>
+  </div>
+
+  <script>
+    let editor, currentLang = 'en';
+
+    window.onload = () => {
+      editor = CodeMirror.fromTextArea(document.getElementById("editorArea"), {
+        mode: "text/x-c++src",
+        lineNumbers: true,
+        theme: "material-darker"
+      });
+      editor.setSize(null, "100%");
+      editor.on("change", renderBlocks);
+      renderBlocks();
+    };
+
+    function renderBlocks() {
+      const preview = document.getElementById("preview");
+      preview.innerHTML = "";
+      const pre = document.createElement("pre");
+      pre.className = "blocks";
+      pre.textContent = editor.getValue();
+      preview.appendChild(pre);
+      snapblocks.renderMatching("pre.blocks", {
+        style: "snap",
+        languages: [currentLang],
+        scale: 1
+      });
+      preview.classList.remove("fadeIn");
+      void preview.offsetWidth;
+      preview.classList.add("fadeIn");
+    }
+
+    function resetCode() {
+      editor.setValue(`when flag clicked\nsay [hello]`);
+    }
+
+    function exportSVG() {
+      const svg = document.querySelector("#preview svg");
+      if (!svg) return alert("No SVG to export!");
+      const svgBlob = new Blob([svg.outerHTML], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(svgBlob);
+      download(url, "blocks.svg");
+    }
+
+    function exportPNG() {
+      const svg = document.querySelector("#preview svg");
+      if (!svg) return alert("No SVG to convert!");
+      const canvas = document.createElement("canvas");
+      const bbox = svg.getBBox();
+      canvas.width = bbox.width + 20;
+      canvas.height = bbox.height + 20;
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+      const svgData = new Blob([svg.outerHTML], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(svgData);
+      img.onload = () => {
+        ctx.drawImage(img, 10, 10);
+        URL.revokeObjectURL(url);
+        const pngURL = canvas.toDataURL("image/png");
+        download(pngURL, "blocks.png");
+      };
+      img.src = url;
+    }
+
+    function download(url, filename) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function saveCode() {
+      const blob = new Blob([editor.getValue()], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      download(url, "snapblocks-code.txt");
+    }
+
+    function loadCode(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => editor.setValue(e.target.result);
+      reader.readAsText(file);
+    }
+
+    function drag(event) {
+      event.dataTransfer.setData("text/plain", event.target.textContent);
+    }
+
+    function drop(event) {
+      const snippet = event.dataTransfer.getData("text/plain");
+      const doc = editor.getDoc();
+      const cursor = doc.getCursor();
+      doc.replaceRange(snippet + "\n", cursor);
+      renderBlocks();
+    }
+  </script>
+</body>
+</html>
