@@ -52,7 +52,7 @@ this is the PRO edition. it’s got a live block preview, a bunch of blocks you 
 
 ## 🕶 made by
 
-**Josiah “JBlueBird” Peters**  
+**JBlueBird**
 aka me  
 i like old macs and block coding and typing too fast
 
