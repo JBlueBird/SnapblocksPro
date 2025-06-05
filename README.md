@@ -4,8 +4,7 @@ Thank you to ego-lay_atman-bay for the snapblocks-test repo. That was AWESOME. T
 
 hiya!! welcome to **SnapBlocks Editor Pro** — it’s like Scratch, but you TYPE the code instead of dragging it around. and then it magically turns into blocks 😎💥
 
-this is the PRO edition. it’s got a live block preview, a bunch of blocks you can drag in, and you can save + load your code too. just don’t ask it to export as PNG or SVG anymore. i removed those. bye-bye. 🫡
-
+this is the PRO edition. it’s got a live block preview, a bunch of blocks you can drag in, and you can save + load your code too. 
 ---
 
 ## 🛠 what can it do???
