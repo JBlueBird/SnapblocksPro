@@ -14,9 +14,29 @@
       margin: 0;
       height: 100%;
       font-family: system-ui, sans-serif;
-      background: #1e1e1e;
-      color: white;
+      background: var(--bg);
+      color: var(--text);
       overflow: hidden;
+    }
+    :root {
+      --bg: #1e1e1e;
+      --text: white;
+      --editor-bg: #282c34;
+      --preview-bg: #121212;
+      --palette-bg: #2c2c2c;
+      --block-bg: #444;
+      --button-bg: #2e2e2e;
+      --button-hover: #444;
+    }
+    .light-theme {
+      --bg: #f0f0f0;
+      --text: #000;
+      --editor-bg: #ffffff;
+      --preview-bg: #fafafa;
+      --palette-bg: #e0e0e0;
+      --block-bg: #ccc;
+      --button-bg: #ddd;
+      --button-hover: #bbb;
     }
     #container {
       display: flex;
@@ -25,7 +45,7 @@
     }
     #blockPalette {
       width: 200px;
-      background-color: #2c2c2c;
+      background-color: var(--palette-bg);
       padding: 10px;
       overflow-y: auto;
     }
@@ -33,13 +53,13 @@
       margin-bottom: 20px;
     }
     .block-category h3 {
-      color: #fff;
+      color: var(--text);
       font-size: 16px;
       margin-bottom: 10px;
     }
     .block {
-      background-color: #444;
-      color: #fff;
+      background-color: var(--block-bg);
+      color: var(--text);
       padding: 5px 10px;
       border-radius: 4px;
       margin-bottom: 5px;
@@ -52,7 +72,7 @@
     #editor {
       width: 50%;
       height: 100%;
-      background: #282c34;
+      background: var(--editor-bg);
       display: flex;
       flex-direction: column;
     }
@@ -61,7 +81,7 @@
       flex: 1;
       padding: 16px;
       overflow: auto;
-      background: #121212;
+      background: var(--preview-bg);
       animation: fadeIn 0.3s ease;
     }
     @keyframes fadeIn {
@@ -70,8 +90,8 @@
     }
     .toolbar {
       position: fixed;
-      top: 10px;
-      left: 220px;
+      bottom: 10px;
+      right: 10px;
       z-index: 1000;
       display: flex;
       flex-wrap: wrap;
@@ -82,8 +102,8 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
     }
     button, input[type="file"] {
-      background: #2e2e2e;
-      color: #fff;
+      background: var(--button-bg);
+      color: var(--text);
       border: 1px solid #444;
       padding: 6px 12px;
       border-radius: 6px;
@@ -91,7 +111,7 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    button:hover { background: #444; }
+    button:hover { background: var(--button-hover); }
     textarea#editorArea { display: none; }
     .CodeMirror { height: 100%; font-size: 14px; }
   </style>
@@ -99,38 +119,120 @@
 <body>
   <div class="toolbar">
     <button onclick="resetCode()">Reset</button>
-    <!--<button onclick="exportSVG()">Export SVG</button>
-    <button onclick="exportPNG()">Export PNG</button>
-	BUTTONS REMOVED BECAUSE OF ERRORS IN EXPORTING AND IMPORTING
--->
     <button onclick="saveCode()">Save</button>
     <input type="file" id="loadFile" accept=".txt" onchange="loadCode(event)">
+    <button onclick="toggleTheme()">Toggle Theme</button>
+    <button onclick="saveAsLink()">Save as Link</button>
   </div>
 
-
-  <!--Add more blocks as needed.-->
   <div id="container">
     <div id="blockPalette">
-      <div class="block-category">
-        <h3>Motion</h3>
-        <div class="block" draggable="true" ondragstart="drag(event)">move (10) steps</div>
-        <div class="block" draggable="true" ondragstart="drag(event)">turn cw (15) degrees</div>
-        <div class="block" draggable="true" ondragstart="drag(event)">turn ccw (15) degrees</div>
-        <div class="block" draggable="true" ondragstart="drag(event)">go to [mouse-pointer v]</div>
-      </div>
-      <div class="block-category">
-        <h3>Looks</h3>
-        <div class="block" draggable="true" ondragstart="drag(event)">say [Hello!] for (2) seconds</div>
-        <div class="block" draggable="true" ondragstart="drag(event)">think [Hmm...] for (2) seconds</div>
-        <div class="block" draggable="true" ondragstart="drag(event)">change [color v] effect by (25)</div>
-      </div>
-    </div>
+
+  <input type="text" id="blockSearch" placeholder="Search blocks..." style="width: 100%; padding: 6px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ccc;">
+
+  <div class="block-category">
+    <h3>Motion</h3>
+    <div class="block" draggable="true" ondragstart="drag(event)">move (10) steps</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">turn cw (15) degrees</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">turn ccw (15) degrees</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">go to [mouse-pointer v]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">glide (1) secs to [random position v]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">point in direction (90)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">change x by (10)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">set x to (0)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">change y by (10)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">set y to (0)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">if on edge, bounce</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">set rotation style [left-right v]</div>
+  </div>
+
+  <div class="block-category">
+    <h3>Looks</h3>
+    <div class="block" draggable="true" ondragstart="drag(event)">say [Hello!] for (2) seconds</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">say [Hello!]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">think [Hmm...] for (2) seconds</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">think [Hmm...]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">switch costume to [costume1 v]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">next costume</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">change size by (10)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">set size to (100)%</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">change [color v] effect by (25)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">set [ghost v] effect to (50)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">clear graphic effects</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">show</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">hide</div>
+  </div>
+
+  <div class="block-category">
+    <h3>Sound</h3>
+    <div class="block" draggable="true" ondragstart="drag(event)">start sound [pop v]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">play sound [meow v] until done</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">stop all sounds</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">change pitch effect by (10)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">set volume to (100)%</div>
+  </div>
+
+  <div class="block-category">
+    <h3>Events</h3>
+    <div class="block" draggable="true" ondragstart="drag(event)">when flag clicked</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">when [space v] key pressed</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">when this sprite clicked</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">broadcast [message1 v]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">when I receive [message1 v]</div>
+  </div>
+
+  <div class="block-category">
+    <h3>Control</h3>
+    <div class="block" draggable="true" ondragstart="drag(event)">wait (1) seconds</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">repeat (10)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">forever</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">if &lt;&gt; then</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">if &lt;&gt; then else</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">wait until &lt;&gt;</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">repeat until &lt;&gt;</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">stop [all v]</div>
+  </div>
+
+  <div class="block-category">
+    <h3>Sensing</h3>
+    <div class="block" draggable="true" ondragstart="drag(event)">touching [mouse-pointer v]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">touching color [#4cbf56]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">distance to [mouse-pointer v]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">ask [What's your name?] and wait</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">key [space v] pressed?</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">mouse down?</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">mouse x</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">mouse y</div>
+  </div>
+
+  <div class="block-category">
+    <h3>Operators</h3>
+    <div class="block" draggable="true" ondragstart="drag(event)">(10 + 5)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">(10 - 5)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">(10 * 5)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">(10 / 5)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">pick random (1) to (10)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">&lt;(5) &gt; (3)&gt;</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">&lt;(5) = (5)&gt;</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">&lt;(5) &lt; (10)&gt;</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">&lt;(true) and (false)&gt;</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">&lt;(true) or (false)&gt;</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">not &lt;(false)&gt;</div>
+  </div>
+
+  <div class="block-category">
+    <h3>Variables</h3>
+    <div class="block" draggable="true" ondragstart="drag(event)">set [my variable v] to (0)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">change [my variable v] by (1)</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">show variable [my variable v]</div>
+    <div class="block" draggable="true" ondragstart="drag(event)">hide variable [my variable v]</div>
+  </div>
+</div>
 
     <div id="editor">
       <div id="codeArea">
         <textarea id="editorArea">when green flag clicked
-say [hello]
-</textarea>
+say [hello]</textarea>
       </div>
     </div>
 
@@ -148,6 +250,16 @@ say [hello]
       });
       editor.setSize(null, "100%");
       editor.on("change", renderBlocks);
+      const urlParams = new URLSearchParams(window.location.search);
+      const blocks = urlParams.get("blocks");
+      if (blocks) {
+        try {
+          const decoded = decodeURIComponent(blocks);
+          editor.setValue(decoded);
+        } catch (e) {
+          console.error("Failed to decode blocks from URL.", e);
+        }
+      }
       renderBlocks();
     };
 
@@ -172,43 +284,6 @@ say [hello]
       editor.setValue(`when flag clicked\nsay [hello]`);
     }
 
-    function exportSVG() {
-      const svg = document.querySelector("#preview svg");
-      if (!svg) return alert("No SVG to export!");
-      const svgBlob = new Blob([svg.outerHTML], { type: "image/svg+xml" });
-      const url = URL.createObjectURL(svgBlob);
-      download(url, "blocks.svg");
-    }
-
-    function exportPNG() {
-      const svg = document.querySelector("#preview svg");
-      if (!svg) return alert("No SVG to convert!");
-      const canvas = document.createElement("canvas");
-      const bbox = svg.getBBox();
-      canvas.width = bbox.width + 20;
-      canvas.height = bbox.height + 20;
-      const ctx = canvas.getContext("2d");
-      const img = new Image();
-      const svgData = new Blob([svg.outerHTML], { type: "image/svg+xml" });
-      const url = URL.createObjectURL(svgData);
-      img.onload = () => {
-        ctx.drawImage(img, 10, 10);
-        URL.revokeObjectURL(url);
-        const pngURL = canvas.toDataURL("image/png");
-        download(pngURL, "blocks.png");
-      };
-      img.src = url;
-    }
-
-    function download(url, filename) {
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
     function saveCode() {
       const blob = new Blob([editor.getValue()], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
@@ -223,6 +298,15 @@ say [hello]
       reader.readAsText(file);
     }
 
+    function download(url, filename) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
     function drag(event) {
       event.dataTransfer.setData("text/plain", event.target.textContent);
     }
@@ -234,6 +318,37 @@ say [hello]
       doc.replaceRange(snippet + "\n", cursor);
       renderBlocks();
     }
+
+    function toggleTheme() {
+      document.body.classList.toggle("light-theme");
+    }
+
+    function saveAsLink() {
+      const code = encodeURIComponent(editor.getValue());
+      const url = `${window.location.origin}${window.location.pathname}?blocks=${code}`;
+      navigator.clipboard.writeText(url).then(() => {
+        alert("Link copied to clipboard:", url);
+      });
+    }
+
+
+document.getElementById("blockSearch").addEventListener("keyup", function() {
+  const search = this.value.toLowerCase();
+  const palette = document.getElementById("blockPalette");
+  const blocks = palette.querySelectorAll(".block");
+  const categories = palette.querySelectorAll(".block-category");
+
+  blocks.forEach(block => {
+    const text = block.textContent.toLowerCase();
+    block.style.display = text.includes(search) ? "block" : "none";
+  });
+
+  // Optionally, hide entire categories if none of their blocks are visible
+  categories.forEach(category => {
+    const visibleBlocks = category.querySelectorAll(".block:not([style*='display: none'])");
+    category.style.display = visibleBlocks.length > 0 ? "block" : "none";
+  });
+});
   </script>
 </body>
 </html>
